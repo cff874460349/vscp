@@ -1,0 +1,8 @@
+# pack-refs with: peeled fully-peeled 
+ddff7f8b07e5adbb2eb2b7b7a088990e4785116c refs/remotes/origin/Fix_155
+3e75833c6b5880cb4d9b38e66c3908792ed6e20d refs/remotes/origin/IPSO
+73b21217fd9d9373797089e254d58535ca55a7e1 refs/remotes/origin/_old/master
+5c15b8630770dcacf9cf371160307aad86714444 refs/remotes/origin/bootstrap
+4d7a799a3a92979d1cd7d8015b69c2f4504e5148 refs/remotes/origin/master
+75ec4ec8298a4c47ab9a5253ac374ad6628f894f refs/remotes/origin/new_instance_list
+73b21217fd9d9373797089e254d58535ca55a7e1 refs/tags/_old/eclipse_initial

@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/vscp_demo.dir/vscp/vscp/vscp/examples/vscp_demo.o  -o vscp_demo  -L/vscp/vscp/vscp/vscp/../../images/rootfs  -L/vscp/vscp/vscp/vscp -rdynamic libvscp.so librg-thread.so libhttp_util.so -lpthread liblwm2m.so -Wl,-rpath,/vscp/vscp/vscp/vscp/../../images/rootfs:/vscp/vscp/vscp/vscp 

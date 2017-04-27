@@ -1,0 +1,1 @@
+/usr/bin/cc  -fPIC   -shared -Wl,-soname,librg-thread.so -o librg-thread.so CMakeFiles/rg-thread.dir/vscp/vscp/vscp/rg_thread/lib.o CMakeFiles/rg-thread.dir/vscp/vscp/vscp/rg_thread/rg_thread.o CMakeFiles/rg-thread.dir/vscp/vscp/vscp/rg_thread/timeutil.o 

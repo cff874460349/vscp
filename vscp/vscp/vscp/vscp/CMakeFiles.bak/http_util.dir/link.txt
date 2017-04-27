@@ -1,0 +1,1 @@
+/usr/bin/cc  -fPIC   -shared -Wl,-soname,libhttp_util.so -o libhttp_util.so CMakeFiles/http_util.dir/vscp/vscp/vscp/libhttp_util/http_option.o CMakeFiles/http_util.dir/vscp/vscp/vscp/libhttp_util/http_upload.o CMakeFiles/http_util.dir/vscp/vscp/vscp/libhttp_util/http_util.o  -L/vscp/vscp/vscp/vscp/../../images/rootfs 

@@ -1,0 +1,187 @@
+#include "vscp_client.h"
+#include "vscp_debug.h"
+#include "rfid_types.h"
+
+#include <string.h>
+#include <stdlib.h>
+#include <rg_thread.h>
+#include <signal.h>
+#include <unistd.h>
+
+#define RSSI_INSTANCE_NUM           2
+
+static int g_quit = 0;
+
+uint8_t macaddr[RSSI_INSTANCE_NUM][MAC_ADDR_LEN] =
+            {{0x00, 0xd0, 0x00, 0x00, 0x00, 0x00},
+             {0x00, 0xd0, 0x01, 0x00, 0x00, 0x01}};
+
+static int ins = 0;    //这个只用来说明标签个数动态变化情况的展示
+
+
+void handle_sigint(int signum)
+{
+    g_quit = 1;
+}
+
+
+/**
+ * 进入main loop，仅供用户参考
+ *
+ */
+int rssi_start(vscp_client_t *data)
+{
+    struct rg_thread thread;
+
+    /*
+     * We catch Ctrl-C signal for a clean exit
+     */
+    signal(SIGINT, handle_sigint);
+
+
+    //main loop
+    while ((0 == g_quit) && (rg_thread_fetch(data->vscp_master, &thread)))
+    {
+        rg_thread_call (&thread);
+    }
+
+    VSCP_DBG_INFO("Leave rg-thread loop\r\n\n");
+
+    return 0;
+}
+unsigned int g_port4mac;
+uint8_t g_tag_info[10] ={0xBB, 0x00, 0x00, 0x00, 0x00, 0xBB, 0x00, 0x00, 0x00, 0x00};
+//vscp_update_notify接口使用说明(example)
+//假设无线从标签读取rssi数据的伪线程为rg_thread_read_rssi
+int rg_thread_read_rfid(struct rg_thread *thread)
+{
+    vscp_client_t *data = (vscp_client_t *)thread->arg;
+    struct rg_thread *thread2;
+    int i, ret;
+    struct timeval tv;
+
+    ins++;
+
+    int msg_num = 5;
+
+    uint8_t *buf = malloc(64);
+    if (buf == NULL) {
+        return -1;
+    }
+
+    memset(buf, 0, 64);
+    tag_msg_info_t *p = (tag_msg_info_t *)buf;
+    for (i=0; i < msg_num; i++) {   /* 产生消息 */
+        p->msg_len = sizeof(g_tag_info);
+        memcpy(p->msg, g_tag_info, p->msg_len);
+        p->msg[1] = (g_port4mac + 10000 * (ins%2)) / 256;
+        p->msg[2] = (g_port4mac + 10000 * (ins%2)) % 256 + i;
+        p->msg[4] = i;
+#if 0
+        int j;
+        printf("Generate msg %d:\n", i);
+        for(j = 0; j < p->msg_len; j++) {
+            printf("%02x", p->msg[j]);
+        }
+        printf("\n");
+#endif
+        p = (tag_msg_info_t *)(p->msg + p->msg_len);
+    }
+    ret = vscp_rfid_update_data(data, data->ins_array[ins%2].mac, buf, msg_num);
+    if (ret) {
+       VSCP_DBG_ERR("rg_thread_read_rssi() CALL rssi_update_data() failed!\n");
+    }
+    free(buf);
+
+    tv.tv_sec =3;   //初始时间2s
+    tv.tv_usec = 0;
+
+    thread2 = rg_thread_add_timer_timeval(data->vscp_master, rg_thread_read_rfid, (void *)data, tv);
+    if (thread2 == NULL) {
+        VSCP_DBG_INFO("rg_thread_read_rssi CREAT timer failed\n");
+        return -1;
+    }
+
+    return 0;
+}
+//./vscp_demo 56830
+int  main(int argc, char **argv)
+{
+    vscp_client_t * context = NULL;
+    int i, ret;
+    char *lport = argv[1];
+    char lmac[18];
+    char *basemac = "00-D0-00-00-00-01";
+
+
+    if (argc  != 2) {
+        printf("param err (acgc != 2)\n");
+        return -1;
+    }
+
+    strcpy(lmac, basemac);
+    lmac[0] = lport[0];
+    lmac[1] = lport[1];
+    lmac[3] = lport[2];
+    lmac[4] = lport[3];
+    lmac[6] = lport[4];
+    g_port4mac = strtol(lport, NULL, 10);
+
+    context = (vscp_client_t *)malloc(sizeof(vscp_client_t));
+    if (NULL == context)
+        return -1; //xxx
+
+    memset(context, 0, sizeof(vscp_client_t));
+    context->addressFamily = AF_INET;
+    context->localPort = strdup(lport);
+    context->localName = strdup(lmac);  // MAC地址,格式待定
+    context->serverPort = strdup("5683");
+    context->serverAddr = strdup("iotc.ruijie.com.cn");
+    context->softwareVersion = strdup("AP_RGOS 11.1(5)B8");
+	context->hardwareType = strdup("AP120-W");
+	context->serialNumber = strdup("1234567890");
+
+    context->ins_num = RSSI_INSTANCE_NUM;
+    for (i = 0; i < context->ins_num; i++) {
+        context->ins_array[i].rfid_type = RFID_SEN_T_BLE; /* TODO */
+        context->ins_array[i].model = RFID_SEN_M_BCM20736;
+        memcpy(context->ins_array[i].mac, macaddr[i], MAC_ADDR_LEN);    /* TODO */
+        context->ins_array[i].mac[4] = g_port4mac / 256;
+        context->ins_array[i].mac[5] = g_port4mac % 256;
+    }
+
+    /* 创建伪线程,用户创建 */
+    context->vscp_master = rg_thread_master_create();
+    if (context->vscp_master == NULL) {
+        VSCP_DBG_ERR("Failed to create thread master.\n");
+        return -1;
+    } else {
+        VSCP_DBG_INIT("create rg-thread master success.\n");
+    }
+
+    /* 模仿用户更新数据 */
+    rg_thread_add_timer(context->vscp_master, rg_thread_read_rfid, (void *)context, 2);
+
+    ret = vscp_init(context);
+    if (ret) {
+        VSCP_DBG_ERR("init error\n");
+        return -1;
+    }
+    //开启服务,main loop,仅供参考，用户可以在这里加入自己的伪线程服务
+	rssi_start(context);
+    vscp_uninit(context);
+    //释放用户创建资源，如伪线程管理器，contex结构体等
+
+    free(context->localPort);
+    free(context->localName);
+    free(context->serverPort);
+    free(context->serverAddr);
+    free(context->softwareVersion);
+    free(context->hardwareType);
+    free(context->serialNumber);
+
+    free(context->vscp_master);
+
+    free(context);
+    return 0;
+}

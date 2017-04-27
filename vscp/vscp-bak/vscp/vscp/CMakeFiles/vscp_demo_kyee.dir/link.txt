@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/vscp_demo_kyee.dir/vscp/vscp/vscp/examples/vscp_demo_kyee.o  -o vscp_demo_kyee  -L/vscp/vscp/vscp/vscp  -L/vscp/vscp/vscp/vscp/../../images/rootfs -rdynamic libvscp.so librg-thread.so libhttp_util.so -lpthread liblwm2m.so -Wl,-rpath,/vscp/vscp/vscp/vscp:/vscp/vscp/vscp/vscp/../../images/rootfs 

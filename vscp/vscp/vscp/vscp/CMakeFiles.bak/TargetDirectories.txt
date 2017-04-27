@@ -1,0 +1,8 @@
+/vscp/vscp/vscp/vscp/CMakeFiles/edit_cache.dir
+/vscp/vscp/vscp/vscp/CMakeFiles/app_gps_server.dir
+/vscp/vscp/vscp/vscp/CMakeFiles/rg-thread.dir
+/vscp/vscp/vscp/vscp/CMakeFiles/http_util.dir
+/vscp/vscp/vscp/vscp/CMakeFiles/vscp_demo.dir
+/vscp/vscp/vscp/vscp/CMakeFiles/lwm2m.dir
+/vscp/vscp/vscp/vscp/CMakeFiles/rebuild_cache.dir
+/vscp/vscp/vscp/vscp/CMakeFiles/vscp.dir
