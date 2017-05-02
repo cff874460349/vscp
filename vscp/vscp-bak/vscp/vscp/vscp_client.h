@@ -76,6 +76,8 @@ typedef struct {
 typedef struct {
 	int weight;
 	int e2;
+	int weight_value;
+	int rate;
 } ladrip_data_t;
 
 typedef struct {
