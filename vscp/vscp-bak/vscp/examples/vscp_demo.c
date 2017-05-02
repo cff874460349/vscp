@@ -889,11 +889,7 @@ int  main(int argc, char **argv)
 	char *ladrip_mac_begin = argv[17];
 	char *ladrip_num = argv[18];
 	char *ladrip_data_weight = argv[19];
-	char *ladrip_data_e2 = argv[20];
-	/*Begin: Added by chenfufeng, 2017/05/02,增加模拟正常滴液功能*/
-	char *ladrip_weight_value = argv[30];
-	char *ladrip_rate = argv[31];
-	/*End: Added by chenfufeng, 2017/05/02,增加模拟正常滴液功能*/
+	char *ladrip_data_e2 = argv[20];	
 	char *ewell = argv[21];
 	char *ewell_mac_begin = argv[22];
 	char *ewell_num = argv[23];

@@ -469,6 +469,21 @@ int ewell_send_dat(struct rg_thread *thread)
     return 0;
 }
 
+/*****************************************************
+作  者:chenfufeng
+日  期:2017-05-02
+描  述:模拟正常滴液
+******************************************************/
+float ladrip_calc_currWeigth(float curr_weigth, float rate)
+{
+	float left_weight = curr_weigth - 0.001*rate;
+	
+	if (left_weight >= 0){
+		config_ladrip.ladrip_data.weight_value = left_weight;
+	}else{
+		config_ladrip.ladrip_data.weight_value = 0;
+	}
+}
 
 int ladrip_send_weight(struct rg_thread *thread)
 {
@@ -477,11 +492,16 @@ int ladrip_send_weight(struct rg_thread *thread)
 //    int i, ret;
     struct timeval tv;
 
+
+	// F5 55 8C 为0ml数据报文
     char weight[]={0xff,0xff,0xff,0xff,0xff,0xff,
-        0xEC, 0x08, 0x40, 0x00, 0x27, 0x00, 0x00, 0xF9, 0x53, 0x68 };
+        0xEC, 0x08, 0x40, 0x00, 0x27, 0x04, 0x00, 0xF9, 0x53, 0x68 };
 
 //    if (stop==1)
  //       return 0;
+
+	/*计算滴液量*/
+	config_ladrip.ladrip_data.weight_value = ladrip_calc_currWeigth(config_ladrip.ladrip_data.weight_value,config_ladrip.ladrip_data.rate);
 
     for (i = 0; i < MAX_TAG_NUM && i < config_ladrip.tag_num; i++) {
      //   if (config_ladrip.tag_mac_connected[i] == 0)
@@ -923,6 +943,10 @@ int  main(int argc, char **argv)
 	char *ladrip_num = argv[18];
 	char *ladrip_data_weight = argv[19];
 	char *ladrip_data_e2 = argv[20];
+	/*Begin: Added by chenfufeng, 2017/05/02,增加模拟正常滴液功能*/
+	char *ladrip_weight_value = argv[30];
+	char *ladrip_rate = argv[31];
+	/*End: Added by chenfufeng, 2017/05/02,增加模拟正常滴液功能*/
 	char *ewell = argv[21];
 	char *ewell_mac_begin = argv[22];
 	char *ewell_num = argv[23];
@@ -1003,6 +1027,8 @@ int  main(int argc, char **argv)
 	}
 	if (strcmp(ladrip_data_weight, "1") == 0) {
 		config_ladrip.ladrip_data.weight= 1;
+		config_ladrip.ladrip_data.weight_value = atoi(ladrip_weight_value)==0?100.0:(float)atoi(ladrip_weight_value);
+		config_ladrip.ladrip_data.rate = atoi(ladrip_rate)==0?0:(float)atoi(ladrip_rate);
 	}
 	
     mac_val = atoi(ladrip_mac_begin);
