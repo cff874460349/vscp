@@ -1,0 +1,20 @@
+#ifndef _VSCP_DEBUG_H_
+#define _VSCP_DEBUG_H_
+
+extern int vscp_debug_info;
+extern void vscp_debug_dump_file(const char *fun_name, int line, const char *fmt, ...);
+
+#define VSCP_DBG_INFO(fmt, args...) do { \
+    if (vscp_debug_info) { \
+        fprintf(stdout, "[VSCP_LIB][INFO][func:%s line:%d]"fmt, __func__, __LINE__, ## args); \
+    } \
+} while (0)
+
+#define VSCP_DBG_ERR(fmt, args...) do { \
+    vscp_debug_dump_file(__func__, __LINE__, fmt, ##args);    \
+} while (0)
+
+#define VSCP_DBG_INIT(fmt, args...) VSCP_DBG_ERR(fmt, ##args);
+
+#endif  /* _VSCP_DEBUG_H_ */
+
